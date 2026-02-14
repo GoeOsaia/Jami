@@ -881,193 +881,179 @@
             `;
         }
 
-        // Render main content
-        function renderMainContent() {
-            const letter = letters[state.currentPage];
-            const t = state.timeToValentines;
-            const opacity = state.showContent ? 'opacity-100' : 'opacity-0';
-            const progress = ((state.currentPage + 1) / letters.length) * 100;
-            
-            return `
-                <div class="min-h-screen p-4 md:p-8 relative overflow-hidden transition-opacity duration-500 ${opacity} screen-transition" style="background: linear-gradient(135deg, #fff8f0 0%, #f8f0f8 20%, #f0f8f4 40%, #f8f0f8 60%, #fff5f5 80%, #fff8f0 100%);">
-                    <!-- Decorative background -->
-                    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                        ${[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map((top, i) => `
-                            <div class="absolute rounded-full" style="
-                                width: 3px;
-                                height: 3px;
-                                top: ${top}%;
-                                left: ${5 + (i % 5) * 20}%;
-                                background: ${i % 3 === 0 ? '#f8bbd0' : i % 3 === 1 ? '#a5d6a7' : '#e1bee7'};
-                                opacity: 0.3;
-                            "></div>
-                        `).join('')}
-                    </div>
+       // Render main content
+function renderMainContent() {
 
-                    <div class="max-w-6xl mx-auto relative z-10">
-                        <!-- Header -->
-                        <div class="text-center mb-6 md:mb-8 animate-fade-in">
-                            <div class="flex items-center justify-center gap-2 md:gap-3 mb-4">
-                                <div style="color: #f06292;">${BookOpenIcon('w-6 md:w-8 h-6 md:h-8')}</div>
-                                <h1 class="text-3xl md:text-6xl font-bold font-playfair" style="background: linear-gradient(135deg, #e91e63, #ba68c8, #66bb6a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                    37 Days of Love
-                                </h1>
-                                <div style="color: #f06292;">${BookOpenIcon('w-6 md:w-8 h-6 md:h-8')}</div>
-                            </div>
-                            <p class="text-lg md:text-xl font-cormorant" style="color: #ba68c8;">
-                                love letters for Jami, written by poging ako- si Geo siempre
-                            </p>
-                        </div>
+// --- SAFETY GUARDS ---
+if (!letters || letters.length === 0) {
+    return `<div style="text-align:center;padding:40px;">No letters found.</div>`;
+}
 
-                        <!-- Progress bar -->
-                        <div class="mb-6 md:mb-10 animate-slide-up">
-                            <div class="rounded-full h-2 md:h-3 overflow-hidden max-w-2xl mx-auto shadow-inner" style="background: rgba(233, 30, 99, 0.1);">
-                                <div class="progress-bar" style="width: ${progress}%"></div>
-                            </div>
-                            <p class="text-center text-sm md:text-base mt-2 font-cormorant" style="color: #ba68c8; font-weight: 500;">
-                                ${state.currentPage + 1} of ${letters.length} letters
-                            </p>
-                        </div>
+const safePage = Math.max(0, Math.min(state.currentPage, letters.length - 1));
+const letter = letters[safePage];
 
-                        <!-- Countdown -->
-                        <div class="mb-8 md:mb-10 flex justify-center animate-slide-up">
-                            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-2xl w-full border border-white/50">
-                                <div class="flex items-center justify-center gap-2 mb-4">
-                                    <div style="color: #ba68c8;">${CalendarIcon('w-5 md:w-6 h-5 md:h-6')}</div>
-                                    <h3 class="text-lg md:text-xl font-bold text-gray-800 font-cormorant">
-                                        ${t.total <= 0 ? 'Happy Valentine\'s Day!' : 'Countdown to the time na siguro mababasa mo na 'to'}
-                                    </h3>
-                                </div>
-                                ${t.total <= 0 ? `
-                                    <div class="text-center py-6 md:py-8">
-                                        <div class="text-5xl md:text-6xl mb-4">💕</div>
-                                        <p class="text-xl md:text-2xl font-playfair font-bold" style="background: linear-gradient(135deg, #e91e63, #ba68c8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                            Valentine's Day na oii ehey!
-                                        </p>
-                                    </div>
-                                ` : `
-                                    <div class="grid grid-cols-4 gap-2 md:gap-3">
-                                        ${[
-                                            { value: t.days, label: 'Days', gradient: 'linear-gradient(135deg, #f06292, #e91e63)' },
-                                            { value: t.hours, label: 'Hours', gradient: 'linear-gradient(135deg, #ba68c8, #ab47bc)' },
-                                            { value: t.minutes, label: 'Minutes', gradient: 'linear-gradient(135deg, #81c784, #66bb6a)' },
-                                            { value: t.seconds, label: 'Seconds', gradient: 'linear-gradient(135deg, #f06292, #e91e63)' }
-                                        ].map((item, idx) => `
-                                            <div class="text-center">
-                                                <div class="rounded-lg md:rounded-xl p-3 md:p-4 mb-2 shadow-lg" style="background: ${item.gradient};">
-                                                    <div class="text-2xl md:text-4xl font-bold text-white font-playfair" data-letters-timer>
-                                                        ${String(item.value).padStart(2, '0')}
-                                                    </div>
-                                                </div>
-                                                <div class="text-xs md:text-sm font-semibold font-cormorant" style="color: #66bb6a;">
-                                                    ${item.label}
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                `}
-                            </div>
-                        </div>
+const t = state.timeToValentines || {
+    total: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+};
 
-                        <!-- Book/Page viewer -->
-                        <div class="relative max-w-4xl mx-auto">
-                            <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden transition-600 ${state.isFlipping ? 'page-flip' : ''}" style="min-height: 400px; border: 1px solid rgba(255, 255, 255, 0.5);">
-                                
-                                <!-- Current letter page -->
-                                <div class="p-6 md:p-12">
-                                    <!-- Page number and navigation -->
-                                    <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
-                                        <button
-                                            onclick="state.currentPage > 0 && goToPage(state.currentPage - 1)"
-                                            ${state.currentPage === 0 ? 'disabled' : ''}
-                                            class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full disabled:opacity-30 disabled:cursor-not-allowed transition-all font-cormorant text-sm md:text-base ripple"
-                                            style="background: #f3e5f5; color: #ba68c8; hover:background: #e1bee7;"
-                                        >
-                                            ${ChevronLeftIcon('w-4 md:w-5 h-4 md:h-5')}
-                                            <span class="hidden sm:inline">Previous</span>
-                                        </button>
-                                        
-                                        <div class="text-center">
-                                            <div class="text-xs md:text-sm text-gray-500 mb-1 font-cormorant">
-                                                Letter ${state.currentPage + 1} of ${letters.length}
-                                            </div>
-                                            <div class="text-xl md:text-2xl font-bold font-playfair" style="background: linear-gradient(135deg, #e91e63, #ba68c8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                                ${letter.title}
-                                            </div>
-                                        </div>
-                                        
-                                        <button
-                                            onclick="state.currentPage < ${letters.length - 1} && goToPage(state.currentPage + 1)"
-                                            ${state.currentPage === letters.length - 1 ? 'disabled' : ''}
-                                            class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full disabled:opacity-30 disabled:cursor-not-allowed transition-all font-cormorant text-sm md:text-base ripple"
-                                            style="background: #fce4ec; color: #e91e63; hover:background: #f8bbd0;"
-                                        >
-                                            <span class="hidden sm:inline">Next</span>
-                                            ${ChevronRightIcon('w-4 md:w-5 h-4 md:h-5')}
-                                        </button>
-                                    </div>
+const opacity = state.showContent ? 'opacity-100' : 'opacity-0';
+const progress = ((safePage + 1) / letters.length) * 100;
 
-                                    <!-- Letter content -->
-                                    <div class="prose prose-lg max-w-none">
-                                        <div class="paper-texture rounded-2xl p-6 md:p-8 shadow-lg" style="border: 2px solid #f8bbd0;">
-                                            <div class="flex items-center gap-2 mb-4">
-                                                <div style="color: #e91e63;">${HeartIcon('w-4 md:w-5 h-4 md:h-5', 'currentColor')}</div>
-                                                <span class="text-xs md:text-sm font-semibold font-cormorant" style="color: #e91e63;">
-                                                    Day ${letter.day}
-                                                </span>
-                                            </div>
-                                            <p class="text-gray-700 text-base md:text-lg leading-relaxed whitespace-pre-wrap font-cormorant letter-content">
-                                                ${letter.content}
-                                            </p>
-                                            <div class="mt-6 pt-6" style="border-top: 1px solid #f8bbd0;">
-                                                <div class="text-right">
-                                                    <div class="text-xs md:text-sm text-gray-500 font-cormorant">
-                                                        With all my love,
-                                                    </div>
-                                                    <div class="text-xl md:text-2xl font-bold mt-1 font-playfair" style="color: #e91e63;">
-                                                        Geo
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+return `
+<div class="min-h-screen p-4 md:p-8 transition-opacity duration-500 ${opacity}"
+     style="background: linear-gradient(135deg,#fff8f0,#f8f0f8,#f0f8f4);">
 
-                                <!-- Page dots indicator -->
-                                <div class="flex items-center justify-center gap-1 md:gap-2 pb-4 md:pb-6 px-4 flex-wrap">
-                                    ${letters.map((_, idx) => `
-                                        <button
-                                            onclick="goToPage(${idx})"
-                                            class="transition-all duration-300 rounded-full ${
-                                                idx === state.currentPage 
-                                                    ? 'w-6 md:w-8 h-2' 
-                                                    : 'w-2 h-2'
-                                            }"
-                                            style="${
-                                                idx === state.currentPage 
-                                                    ? 'background: linear-gradient(90deg, #e91e63, #ba68c8);' 
-                                                    : 'background: #d1d5db; hover:background: #9ca3af;'
-                                            }"
-                                            aria-label="Go to letter ${idx + 1}"
-                                        ></button>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
+  <div class="max-w-6xl mx-auto">
 
-                        <!-- Keyboard hint -->
-                        <div class="mt-6 text-center text-xs md:text-sm font-cormorant" style="color: #ba68c8;">
-                            💡 Use ← → arrow keys to navigate
-                        </div>
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+      <h1 style="font-size:48px;font-weight:bold;
+                 background:linear-gradient(135deg,#e91e63,#ba68c8,#66bb6a);
+                 -webkit-background-clip:text;
+                 -webkit-text-fill-color:transparent;">
+        💌 37 Days of Love 💌
+      </h1>
 
-                        <!-- Footer -->
-                        <div class="mt-6 md:mt-8 text-center font-cormorant text-sm md:text-base" style="color: #ba68c8;">
-                            Made with love ito boii:P
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+      <p style="color:#ba68c8;font-size:20px;">
+        love letters for Jami, written by pogi Geo 😎
+      </p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div style="max-width:600px;margin:auto;margin-bottom:30px;">
+      <div style="height:10px;background:#f3e5f5;border-radius:999px;overflow:hidden;">
+        <div style="width:${progress}%;height:100%;
+                     background:linear-gradient(90deg,#e91e63,#ba68c8);">
+        </div>
+      </div>
+      <p style="text-align:center;color:#ba68c8;margin-top:8px;">
+        ${safePage + 1} of ${letters.length} letters
+      </p>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div style="text-align:center;margin-bottom:40px;">
+      <h3 style="color:#333;font-size:22px;">
+        ${t.total <= 0
+            ? "Happy Valentine's Day! 💖"
+            : "Countdown to mababasa mo na to 😳"}
+      </h3>
+
+      ${t.total <= 0 ? `
+        <div style="font-size:60px;margin-top:10px;">💕</div>
+        <div style="font-size:24px;color:#e91e63;font-weight:bold;">
+          Valentine's Day na oii ehey
+        </div>
+      ` : `
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+          ${[
+            { v: t.days, l: 'Days' },
+            { v: t.hours, l: 'Hours' },
+            { v: t.minutes, l: 'Minutes' },
+            { v: t.seconds, l: 'Seconds' }
+          ].map(x => `
+            <div>
+              <div style="background:#e91e63;color:white;
+                          padding:12px 16px;border-radius:12px;
+                          font-size:22px;font-weight:bold;">
+                ${String(x.v || 0).padStart(2,'0')}
+              </div>
+              <div style="font-size:12px;color:#66bb6a;">
+                ${x.l}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `}
+    </div>
+
+    <!-- LETTER CARD -->
+    <div style="max-width:700px;margin:auto;
+                background:white;border-radius:24px;
+                padding:30px;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+
+      <!-- NAV -->
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+
+        <button
+          onclick="state.currentPage > 0 && goToPage(state.currentPage - 1)"
+          ${safePage === 0 ? 'disabled' : ''}
+          style="padding:8px 16px;border-radius:999px;
+                 background:#f3e5f5;color:#ba68c8;border:none;">
+          ← Previous
+        </button>
+
+        <div style="text-align:center;">
+          <div style="color:#888;font-size:14px;">
+            Letter ${safePage + 1} of ${letters.length}
+          </div>
+          <div style="font-size:24px;font-weight:bold;color:#e91e63;">
+            ${letter.title || ''}
+          </div>
+        </div>
+
+        <button
+          onclick="state.currentPage < ${letters.length - 1} && goToPage(state.currentPage + 1)"
+          ${safePage === letters.length - 1 ? 'disabled' : ''}
+          style="padding:8px 16px;border-radius:999px;
+                 background:#fce4ec;color:#e91e63;border:none;">
+          Next →
+        </button>
+
+      </div>
+
+      <!-- LETTER CONTENT -->
+      <div style="border:2px solid #f8bbd0;border-radius:20px;padding:20px;">
+        <div style="color:#e91e63;margin-bottom:10px;">
+          ❤️ Day ${letter.day || ''}
+        </div>
+
+        <p style="white-space:pre-wrap;color:#444;font-size:18px;">
+          ${letter.content || ''}
+        </p>
+
+        <div style="text-align:right;margin-top:30px;
+                    border-top:1px solid #f8bbd0;padding-top:10px;">
+          <div style="color:#888;">With all my love,</div>
+          <div style="font-size:26px;font-weight:bold;color:#e91e63;">
+            Geo
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DOTS -->
+    <div style="text-align:center;margin-top:20px;">
+      ${letters.map((_,i)=>`
+        <button onclick="goToPage(${i})"
+          style="width:${i===safePage?'20px':'8px'};
+                 height:8px;border-radius:999px;
+                 margin:0 4px;border:none;
+                 background:${i===safePage
+                   ? 'linear-gradient(90deg,#e91e63,#ba68c8)'
+                   : '#ccc'};">
+        </button>
+      `).join('')}
+    </div>
+
+    <div style="text-align:center;margin-top:20px;color:#ba68c8;">
+      💡 Use ← → arrow keys to navigate
+    </div>
+
+    <div style="text-align:center;margin-top:10px;color:#ba68c8;">
+      Made with love ito boii :P
+    </div>
+
+  </div>
+</div>
+`;
+}
+
 
         // Main render function
         function render() {
